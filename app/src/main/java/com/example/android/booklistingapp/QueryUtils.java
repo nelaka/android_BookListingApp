@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.example.android.booklistingapp;
 
 import android.text.TextUtils;
@@ -34,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helper methods related to requesting and receiving earthquake data from USGS.
+ * Helper methods related to requesting and receiving earthquake data from Google Books API.
  */
 public final class QueryUtils {
 
-    /** Tag for the log messages */
+    /**
+     * Tag for the log messages
+     */
     private static final String LOG_TAG = QueryUtils.class.getSimpleName();
 
     /**
@@ -50,7 +37,7 @@ public final class QueryUtils {
     }
 
     /**
-     * Query the USGS dataset and return a list of {@link Book} objects.
+     * Query the Google Books API dataset and return a list of {@link Book} objects.
      */
     public static List<Book> fetchBookData(String requestUrl) {
         // Create URL object
@@ -64,7 +51,7 @@ public final class QueryUtils {
             Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
+        // Extract relevant fields from the JSON response and create a list of {@link Book}s
         List<Book> books = extractFeatureFromJson(jsonResponse);
 
         // Return the list of {@link Book}s
@@ -156,7 +143,7 @@ public final class QueryUtils {
             return null;
         }
 
-        // Create an empty ArrayList that we can start adding earthquakes to
+        // Create an empty ArrayList that we can start adding books to
         List<Book> books = new ArrayList<>();
 
         // Try to parse the JSON response string. If there's a problem with the way the JSON
@@ -167,57 +154,56 @@ public final class QueryUtils {
             // Create a JSONObject from the JSON response string
             JSONObject baseJsonResponse = new JSONObject(bookJSON);
 
-            // Extract the JSONArray associated with the key called "features",
-            // which represents a list of features (or earthquakes).
+            // Extract the JSONArray associated with the key called "items",
+            // which represents a list of books.
             JSONArray bookArray = baseJsonResponse.getJSONArray("items");
 
-            // For each earthquake in the earthquakeArray, create an {@link Earthquake} object
+            // For each book in the bookArray, create an {@link Book} object
             for (int i = 0; i < bookArray.length(); i++) {
 
-                // Get a single earthquake at position i within the list of earthquakes
+                // Get a single book at position i within the list of books
                 JSONObject currentBook = bookArray.getJSONObject(i);
 
-                // For a given earthquake, extract the JSONObject associated with the
-                // key called "properties", which represents a list of all properties
-                // for that earthquake.
+                // For a given book, extract the JSONObject associated with the
+                // key called "volumeInfo".
                 JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
 
-                // Extract the value for the key called "mag"
+                // Extract the value for the key called "title"
                 String title = volumeInfo.getString("title");
 
                 String subtitle = null;
                 if (volumeInfo.has("subtitle")) {
-                    // Extract the value for the key called "place"
+                    // Extract the value for the key called "subtitle"
                     subtitle = volumeInfo.getString("subtitle");
                 }
 
+                // We need a String with all authors divided with comma
                 StringBuilder authors = new StringBuilder();
                 if (volumeInfo.has("authors")) {
+                    // Extract the JSONArray associated with the key called authors
                     JSONArray authorArray = volumeInfo.getJSONArray("authors");
 
+                    // For each author in the authorArray, append its value to authors StringBuilder
                     for (int j = 0; j < authorArray.length(); j++) {
-                        // Extract the value for the key called "authors"
                         authors.append(authorArray.getString(j)).append(", ");
                     }
-
-                    //remove ", " from the end of the string
+                    //remove comma from the end of the string
                     authors.setLength(authors.length() - 2);
                 }
 
-                // Extract the value for the key called "mag"
                 String url = null;
                 if (volumeInfo.has("infoLink")) {
-                    // Extract the value for the key called "place"
+                    // Extract the value for the key called "infoLink"
                     url = volumeInfo.getString("infoLink");
                 }
 
-                 // Create a new {@link Earthquake} object with the magnitude, location, time,
-                 // and url from the JSON response.
-                 Book book = new Book(title, subtitle, authors.toString(), url);
+                /** Create a new {@link Book} object with the title, subtitle, the String
+                 *  with the authors and the url from the JSON response.
+                 * */
+                Book book = new Book(title, subtitle, authors.toString(), url);
 
-                 // Add the new {@link Earthquake} to the list of earthquakes.
-                 books.add(book);
-
+                // Add the new {@link Book} to the list of books
+                books.add(book);
             }
 
         } catch (JSONException e) {
@@ -227,8 +213,7 @@ public final class QueryUtils {
             Log.e("QueryUtils", "Problem parsing the book JSON results", e);
         }
 
-        // Return the list of earthquakes
+        // Return the list of books
         return books;
     }
-
 }
