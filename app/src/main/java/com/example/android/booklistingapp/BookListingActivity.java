@@ -1,6 +1,10 @@
 package com.example.android.booklistingapp;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,6 +32,15 @@ public class BookListingActivity extends AppCompatActivity {
      */
     private BookListingAdapter mAdapter;
 
+    /**
+     * Returns true if network is available or about to become available
+     */
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,16 +67,30 @@ public class BookListingActivity extends AppCompatActivity {
             // The code in this method will be executed when the button is clicked on.
             @Override
             public void onClick(View view) {
+                Context context = getApplicationContext();
 
-                EditText searchEditTextView = (EditText) findViewById(R.id.search);
-                String searchTerm = searchEditTextView.getText().toString();
+                //Check for internet connection
+                if (isNetworkAvailable(context)) {
 
-                Toast.makeText(getApplicationContext(), "Searching for: " + searchTerm, Toast.LENGTH_SHORT).show();
-                String url = GBOOKS_REQUEST_URL + searchTerm;
+                    EditText searchEditTextView = (EditText) findViewById(R.id.search);
+                    String searchTerm = searchEditTextView.getText().toString();
 
-                // Start the AsyncTask to fetch the book data
-                BookAsyncTask task = new BookAsyncTask();
-                task.execute(url);
+                    if (searchTerm.isEmpty()) {
+                        Toast.makeText(getApplicationContext(), "Nothing to search for... :(", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Searching for: " + searchTerm, Toast.LENGTH_SHORT).show();
+                        String url = GBOOKS_REQUEST_URL + searchTerm;
+
+                        // Start the AsyncTask to fetch the book data
+                        BookAsyncTask task = new BookAsyncTask();
+
+                        task.execute(url);
+                    }
+
+                } else {
+                    //Provide feedback about no internet connection
+                    Toast.makeText(BookListingActivity.this, "Please check your internet connection - No internet!", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -105,6 +132,19 @@ public class BookListingActivity extends AppCompatActivity {
          * We should not update the UI from a background thread, so we return a list of
          * {@link Book}s as the result.
          */
+        ProgressDialog progDailog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progDailog = new ProgressDialog(BookListingActivity.this);
+            progDailog.setMessage("Searching...");
+            progDailog.setIndeterminate(false);
+            progDailog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progDailog.setCancelable(true);
+            progDailog.show();
+        }
+
         @Override
         protected List<Book> doInBackground(String... urls) {
             // Don't perform the request if there are no URLs, or the first URL is null
@@ -127,7 +167,7 @@ public class BookListingActivity extends AppCompatActivity {
         protected void onPostExecute(List<Book> data) {
             // Clear the adapter of previous book data
             mAdapter.clear();
-
+            progDailog.dismiss();
             // If there is a valid list of {@link Book}s, then add them to the adapter's
             // data set. This will trigger the ListView to update.
             if (data != null && !data.isEmpty()) {

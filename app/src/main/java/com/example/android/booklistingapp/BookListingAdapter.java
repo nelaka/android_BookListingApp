@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /*
 * {@link BookListingAdapter} is an {@link ArrayAdapter} that can provide the layout for each list
 * based on a data source, which is a list of {@link Book} objects.
@@ -31,33 +34,50 @@ public class BookListingAdapter extends ArrayAdapter<Book> {
     public View getView(int position, View convertView, ViewGroup parent) {
         // Check if the existing view is being reused, otherwise inflate the view
         View listItemView = convertView;
-        if (listItemView == null) {
+        BookListingAdapter.ViewHolder holder;
+
+        if (listItemView != null) {
+
+            holder = (ViewHolder) listItemView.getTag();
+        } else {
+
             listItemView = LayoutInflater.from(getContext()).inflate(
                     R.layout.book_list_item, parent, false);
+            holder = new ViewHolder(listItemView);
+            listItemView.setTag(holder);
         }
 
         // Get the {@link Book} object located at this position in the list
         Book currentBook = getItem(position);
 
-        // Find the TextView with view ID title
-        TextView titleTextView = (TextView) listItemView.findViewById(R.id.title);
-        titleTextView.setText(currentBook.getTitle());
+        holder.titleTextView.setText(currentBook.getTitle());
 
         // Find the TextView with view ID subtitle and hide it, if it is empty
-        TextView subtitleTextView = (TextView) listItemView.findViewById(R.id.subtitle);
-        if (currentBook.getSubtitle() == null) subtitleTextView.setVisibility(View.GONE);
+        if (currentBook.getSubtitle() == null) holder.subtitleTextView.setVisibility(View.GONE);
         else {
-            subtitleTextView.setText(currentBook.getSubtitle());
-            subtitleTextView.setVisibility(View.VISIBLE);
+            holder.subtitleTextView.setText(currentBook.getSubtitle());
+            holder.subtitleTextView.setVisibility(View.VISIBLE);
         }
 
         // Find the TextView with view ID authors and hide it, if it is empty
-        TextView authorsTextView = (TextView) listItemView.findViewById(R.id.authors);
-        if (currentBook.getAuthors() == "") authorsTextView.setVisibility(View.GONE);
+        if (currentBook.getAuthors().isEmpty()) holder.authorsTextView.setVisibility(View.GONE);
         else {
-            authorsTextView.setText(currentBook.getAuthors());
-            authorsTextView.setVisibility(View.VISIBLE);
+            holder.authorsTextView.setText(currentBook.getAuthors());
+            holder.authorsTextView.setVisibility(View.VISIBLE);
         }
         return listItemView;
+    }
+
+    static class ViewHolder {
+        @BindView(R.id.title)
+        TextView titleTextView;
+        @BindView(R.id.subtitle)
+        TextView subtitleTextView;
+        @BindView(R.id.authors)
+        TextView authorsTextView;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }
