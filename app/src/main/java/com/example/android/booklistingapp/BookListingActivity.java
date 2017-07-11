@@ -118,9 +118,7 @@ public class BookListingActivity extends AppCompatActivity {
      * {@link AsyncTask} to perform the network request on a background thread, and then
      * update the UI with the list of books in the response.
      * AsyncTask has three generic parameters: the input type, a type used for progress updates, and
-     * an output type. Our task will take a String URL, and return a Book. We won't do
-     * progress updates, so the second generic is just Void.
-     * We'll only override two of the methods of AsyncTask: doInBackground() and onPostExecute().
+     * an output type. Our task will take a String URL, and return a Book. 
      * The doInBackground() method runs on a background thread, so it can run long-running code
      * (like network activity), without interfering with the responsiveness of the app.
      * Then onPostExecute() is passed the result of doInBackground() method, but runs on the
