@@ -16,10 +16,25 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.android.booklistingapp.adapter.BookListingAdapter;
+import com.example.android.booklistingapp.model.Book;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class BookListingActivity extends AppCompatActivity {
+
+    @BindView(R.id.list)
+    ListView mBookListView;
+    @BindView(R.id.empty_view)
+    View mEmptyView;
+    @BindView(R.id.search_button)
+    Button mSearchButton;
+    @BindView(R.id.search)
+    EditText mSearchEditTextView;
 
     /**
      * URL for google books data from the Google API
@@ -45,25 +60,19 @@ public class BookListingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_listing);
-
-        // Find a reference to the {@link ListView} in the layout
-        ListView bookListView = (ListView) findViewById(R.id.list);
-
-        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
-        View emptyView = findViewById(R.id.empty_view);
-        bookListView.setEmptyView(emptyView);
+        ButterKnife.bind(this);
+        // Set empty view on the ListView, so that it only shows when the list has 0 items.
+        mBookListView.setEmptyView(mEmptyView);
 
         // Create a new adapter that takes an empty list of books as input
         mAdapter = new BookListingAdapter(this, new ArrayList<Book>());
 
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
-        bookListView.setAdapter(mAdapter);
+        mBookListView.setAdapter(mAdapter);
 
         // Set a click listener on the search Button, to implement the search
-        Button searchButton = (Button) findViewById(R.id.search_button);
-
-        searchButton.setOnClickListener(new View.OnClickListener() {
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
             // The code in this method will be executed when the button is clicked on.
             @Override
             public void onClick(View view) {
@@ -72,8 +81,8 @@ public class BookListingActivity extends AppCompatActivity {
                 //Check for internet connection
                 if (isNetworkAvailable(context)) {
 
-                    EditText searchEditTextView = (EditText) findViewById(R.id.search);
-                    String searchTerm = searchEditTextView.getText().toString();
+
+                    String searchTerm = mSearchEditTextView.getText().toString();
 
                     if (searchTerm.isEmpty()) {
                         Toast.makeText(getApplicationContext(), "Nothing to search for... :(", Toast.LENGTH_SHORT).show();
@@ -96,7 +105,7 @@ public class BookListingActivity extends AppCompatActivity {
 
         // Set an item click listener on the ListView, which sends an intent to a web browser
         // to open a website with more information about the selected book.
-        bookListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mBookListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 // Find the current book that was clicked on

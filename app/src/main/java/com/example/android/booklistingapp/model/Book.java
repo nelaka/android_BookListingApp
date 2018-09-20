@@ -1,4 +1,4 @@
-package com.example.android.booklistingapp;
+package com.example.android.booklistingapp.model;
 
 /**
  * {@link Book} represents a Google Book.
