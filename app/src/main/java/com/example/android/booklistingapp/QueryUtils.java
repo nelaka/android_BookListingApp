@@ -3,8 +3,6 @@ package com.example.android.booklistingapp;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.android.booklistingapp.model.Book;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
